@@ -1,0 +1,106 @@
+package utils;
+
+import ia.hugo.silencetime.R;
+
+import java.util.List;
+
+import android.content.Context;
+import android.graphics.Typeface;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.TextView;
+
+public class DiaExpandableListAdapter extends BaseExpandableListAdapter {
+	
+	private Context _context;
+	private List<String> _listDias;
+	private PesoExpandableListAdapter _pesoExpandableListAdapter;
+	
+	public DiaExpandableListAdapter(Context contexto,
+			List<String> listDias,
+			PesoExpandableListAdapter pesoExpandableListAdapter){
+		this._context = contexto;
+		this._listDias = listDias;
+		this._pesoExpandableListAdapter = pesoExpandableListAdapter;
+	}
+
+	@Override
+	public Object getChild(int groupPostion, int ChildPostion) {
+		return this._pesoExpandableListAdapter.getGroup(ChildPostion);
+	}
+
+	@Override
+	public long getChildId(int groupPostion, int ChildPostion) {
+		return ChildPostion;
+	}
+
+	@Override
+	public View getChildView(int groupPosition, final int childPosition,
+            boolean isLastChild, View convertView, ViewGroup parent) {
+		
+		if (convertView == null){
+			LayoutInflater inflater = (LayoutInflater)
+					this._context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			convertView = inflater.inflate(R.layout.dias_expandable_list_child, null);
+		}
+		
+		ExpandableListView expandableListView = 
+				(ExpandableListView) convertView.findViewById(R.id.pesos_expandable_listChild);
+		expandableListView.setAdapter(this._pesoExpandableListAdapter);
+		
+		return convertView;
+	}
+
+	@Override
+	public int getChildrenCount(int groupPostion) {
+		return this._pesoExpandableListAdapter.getGroupCount();
+	}
+
+	@Override
+	public Object getGroup(int groupPostion) {
+		return this._listDias.get(groupPostion);
+	}
+
+	@Override
+	public int getGroupCount() {
+		return this._listDias.size();
+	}
+
+	@Override
+	public long getGroupId(int groupPostion) {
+		return groupPostion;
+	}
+
+	@Override
+	public View getGroupView(int groupPosition, boolean isExpanded,
+            View convertView, ViewGroup parent) {
+		
+		final String headerTitle = (String) getGroup(groupPosition);
+		if (convertView == null){
+			LayoutInflater inflater = (LayoutInflater)
+					this._context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			convertView = inflater.inflate(R.layout.dias_expandable_list_group, null);
+		}
+		
+		TextView lblListHeader = (TextView) convertView
+				.findViewById(R.id.lblDiasListHeader);
+		lblListHeader.setTypeface(null, Typeface.BOLD);
+		lblListHeader.setText(headerTitle);
+		
+		return convertView;
+	}
+
+	@Override
+	public boolean hasStableIds() {
+		return false;
+	}
+
+	@Override
+	public boolean isChildSelectable(int groupPosition, int childPosition) {
+		return true;
+	}
+
+}

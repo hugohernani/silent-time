@@ -1,0 +1,79 @@
+package ia.work.silencetime;
+
+import ia.hugo.silencetime.R;
+import services.PercepcaoMudanca;
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.View;
+import android.widget.Toast;
+import android.widget.ToggleButton;
+
+public class SilenceTimeActivity extends Activity {
+	
+	private BroadcastReceiver mReceiverSound;
+	private ToggleButton tBModoAprendiz;
+	private ToggleButton tBModoAutomatico;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_silence_time);
+		
+		tBModoAprendiz = (ToggleButton) findViewById(R.id.tbModeLearning);
+		tBModoAutomatico = (ToggleButton) findViewById(R.id.tbModeAutomatic);
+
+		iniciarPercepcaoMudanca();
+	}
+
+	private void iniciarPercepcaoMudanca() {
+		Intent intentServicePercepcaoMudanca = new Intent(this, PercepcaoMudanca.class);
+		intentServicePercepcaoMudanca.setAction("services.PercepcaoMudanca");
+		this.startService(intentServicePercepcaoMudanca);
+		
+//		if (PercepcaoMudanca.isBroadcastInRunning())
+//			tBModoAprendiz.setActivated(true);
+//		if (PercepcaoMudanca.areAlarmsInRunning())
+//			tBModoAutomatico.setActivated(true);
+
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.silence_time, menu);
+		return true;
+	}
+	
+	public void setModoAprendizado(View view){
+		boolean aprendizAtivado = tBModoAprendiz.isChecked();
+		if (aprendizAtivado){
+			Toast.makeText(this, "Modo aprendiz ativado!", Toast.LENGTH_LONG).show();
+		}else{
+			Toast.makeText(this, "Modo aprendiz desativado!", Toast.LENGTH_LONG).show();
+		}
+		Log.i("receiverSound", "Capturando o click: " + aprendizAtivado);
+		PercepcaoMudanca.setModoAprendiz(getApplicationContext(),aprendizAtivado);
+	}
+	
+	public void setModoAutomatico(View view){
+		boolean alarmeAtivado = tBModoAutomatico.isChecked();
+		if (alarmeAtivado){
+			Toast.makeText(this, "Modo automático ativado!", Toast.LENGTH_LONG).show();
+		}else{
+			Toast.makeText(this, "Modo automático desativado!", Toast.LENGTH_LONG).show();
+		}
+		PercepcaoMudanca.setModoAutomatico(getApplicationContext(), alarmeAtivado);
+	}
+	
+	public void showAgendamentos(View view){
+		Intent intentAgendamento = new Intent(this, AgendamentosActivity.class);
+		startActivity(intentAgendamento);
+	}
+
+}

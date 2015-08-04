@@ -1,0 +1,58 @@
+<utils.DashboardLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ToggleButton
+        android:id="@+id/tbModeLearning"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        style="@style/DashboardButton"
+        android:drawableTop="@drawable/aprendendo"
+        android:onClick="setModoAprendizado"
+        android:textOff="Aprender?"
+        android:textOn="Aprendendo" />
+
+    <ToggleButton
+        android:id="@+id/tbModeAutomatic"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+		android:textOn="Em agendamento"
+        android:textOff="Ativar alarmes"
+        android:onClick="setModoAutomatico"
+        android:drawableTop="@drawable/olho_humano"
+        style="@style/DashboardButton" />
+
+    <Button
+        android:id="@+id/btAgendamento"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+		android:drawableTop="@drawable/agendamentos"
+        android:onClick="showAgendamentos"
+        android:text="Agendamento"
+        style="@style/DashboardButton" />
+
+    <Button
+        android:id="@+id/btConfiguracoes"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        style="@style/DashboardButton"
+        android:drawableTop="@drawable/configuracoes"
+        android:text="Configuracoes" />
+
+    <Button
+        android:id="@+id/btSair"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        style="@style/DashboardButton"
+        android:drawableTop="@drawable/ajuda"
+        android:text="Ajuda" />
+
+    <Button
+        android:id="@+id/btSobre"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        style="@style/DashboardButton"
+        android:drawableTop="@drawable/sobre"
+        android:text="Sobre" />
+
+</utils.DashboardLayout>

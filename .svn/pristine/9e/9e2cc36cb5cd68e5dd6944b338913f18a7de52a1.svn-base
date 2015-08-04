@@ -1,0 +1,135 @@
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    <!-- The main content view -->
+
+    <FrameLayout
+        android:id="@+id/content_frame"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1" />
+
+    <!-- The navigation drawer -->
+    
+	<LinearLayout
+	    android:id="@+id/left_drawer_layout"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:layout_gravity="start"
+	    android:layout_weight="3"
+	    android:orientation="vertical" >
+
+		<Button
+		    android:id="@+id/bTTodosAgendamentos"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+    	    android:textAlignment="textEnd"
+		    android:layout_marginBottom="8dp"
+		    android:background="@android:color/white"
+		    android:text="Todos os dias"
+		    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+	    <CheckBox
+	        android:id="@+id/cBAgendamentoSegunda"
+	        style="@style/checkBoxStyle"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+    	    android:textAlignment="textEnd"
+	        android:background="@android:color/holo_orange_dark"
+	        android:text="Segunda-feira" />
+	    
+	    <CheckBox
+	        android:id="@+id/cBAgendamentoTerca"
+	        style="@style/checkBoxStyle"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+	        android:background="@android:color/holo_orange_light"
+	        android:text="Terça-feira" />
+
+	    <CheckBox
+	        android:id="@+id/cBAgendamentoQuarta"
+	        style="@style/checkBoxStyle"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+	        android:background="@android:color/holo_red_dark"
+	        android:text="Quarta-feira" />
+
+	    <CheckBox
+	        android:id="@+id/cBAgendamentoQuinta"
+	        style="@style/checkBoxStyle"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+	        android:background="@android:color/holo_red_light"
+	        android:text="Quinta-feira" />
+
+	    <CheckBox
+	        android:id="@+id/cBAgendamentoSexta"
+	        style="@style/checkBoxStyle"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+	        android:background="@android:color/holo_green_dark"
+	        android:text="Sexta-feira" />
+
+	    <CheckBox
+	        android:id="@+id/cBAgendamentoSabado"
+	        style="@style/checkBoxStyle"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+	        android:background="@android:color/holo_green_light"
+	        android:text="Sábado" />
+	    
+	    <CheckBox
+	        android:id="@+id/cBAgendamentoDomingo"
+	        style="@style/checkBoxStyle"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+	        android:background="@android:color/holo_purple"
+	        android:text="Domingo" />
+	    
+	    <Button 
+	        android:id="@+id/cBTodosOsPesos" 
+	        style="@style/checkBoxStyle"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+	        android:background="@android:color/holo_orange_dark"
+	        android:text="Todos os pesos" />
+
+	    <CheckBox 
+	        android:id="@+id/cBPeso3" 
+	        style="@style/checkBoxStyle"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+	        android:background="@android:color/holo_orange_light"
+	        android:text="Peso 3" />
+	        
+	    <CheckBox 
+	        android:id="@+id/cBPeso2"
+	        style="@style/checkBoxStyle"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+	        android:background="@android:color/holo_red_dark"
+	        android:text="Peso 2" />
+	    
+	    <CheckBox 
+	        android:id="@+id/cBPeso1"
+	        style="@style/checkBoxStyle"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+	        android:background="@android:color/holo_red_dark"
+	        android:text="Peso 1" />
+	    	    	    
+		<Button
+		    android:id="@+id/btFiltrar"
+	        android:layout_width="match_parent"
+    	    android:layout_height="wrap_content"
+		    android:layout_marginTop="8dp"
+		    android:text="Filtrar"
+		    android:textAppearance="?android:attr/textAppearanceSmallInverse" />
+	    
+	    
+	    
+    </LinearLayout>
+
+</android.support.v4.widget.DrawerLayout>

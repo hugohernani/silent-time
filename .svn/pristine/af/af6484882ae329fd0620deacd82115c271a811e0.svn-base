@@ -1,0 +1,191 @@
+package persistencia;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+
+import model.Agendamento;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.CalendarContract.Events;
+import android.util.Log;
+
+public class EventsAndroid {
+	
+	/*
+	 * Referente ao CalendarProvider
+	 */
+	
+	private final String[] projectionEvents = new String[]{
+			Events._ID,
+			Events.TITLE,
+			Events.DESCRIPTION,
+			Events.DTSTART,
+			Events.DTEND,
+			Events.AVAILABILITY,
+			};
+		
+	private Context mContexto;
+	private ContentResolver contentResolver;
+	private final Uri mUriEvent = Events.CONTENT_URI;
+	private final Integer modoOcupado = Events.AVAILABILITY_BUSY;
+	private AgendamentoSilenciosoDao dao;
+
+	public EventsAndroid(Context context){
+		this.mContexto = context;
+		this.contentResolver = context.getContentResolver();
+		dao = new AgendamentoSilenciosoDao(context);
+	}
+	
+	public List<Agendamento> getAllEventsOfWeek(){
+		dao.open();
+		List<Agendamento> lista = new ArrayList<Agendamento>();
+		
+		Calendar calFistDayOfWeek = new GregorianCalendar();
+//		calFistDayOfWeek.set(Calendar.DAY_OF_WEEK, calFistDayOfWeek.getFirstDayOfWeek());
+		
+		System.out.println("Dia primeiro: " + calFistDayOfWeek.get(Calendar.DAY_OF_MONTH));
+		
+		Calendar calLastDayOfWeek = new GregorianCalendar();
+		calLastDayOfWeek.set(Calendar.DAY_OF_WEEK, 7);
+		System.out.println("Dia final: " + calLastDayOfWeek.get(Calendar.DAY_OF_MONTH));
+		
+		String selection = Events.DTSTART + " > ? AND " + Events.DTEND + " < ?";
+		String[] selecionArgs = new String[]{String.valueOf(calFistDayOfWeek.getTimeInMillis()),
+				String.valueOf(calLastDayOfWeek.getTimeInMillis())};
+		
+		Cursor cursor = contentResolver.query(mUriEvent, projectionEvents,
+				selection, selecionArgs, Events.DTSTART + " ASC");
+		
+
+		if (cursor.moveToFirst()){
+			do{
+				Long id_evento = cursor.getLong(0);
+				if (cursor.getInt(5) != Events.AVAILABILITY_BUSY) continue;
+				Agendamento agendamento = dao.getAgendamentoByEventoId(id_evento);
+				if (agendamento != null){
+					lista.add(agendamento);
+					continue;
+				}else{
+					
+					agendamento = new Agendamento(
+							cursor.getString(1), cursor.getString(2),
+							cursor.getLong(3), cursor.getLong(4), id_evento
+							);
+					lista.add(agendamento);
+					
+					Log.i("EventoTitulo", "Titulo: " + cursor.getString(1));
+				}
+			}while(cursor.moveToNext());
+		}
+		cursor.close();
+		dao.createAtCascade(lista);
+		dao.close();
+		return lista;
+	}
+	
+	public List<Agendamento> getAllEventsOfQuinzena(){
+		dao.open();
+		List<Agendamento> lista = new ArrayList<Agendamento>();
+		
+		Calendar calFistDayOfWeek = new GregorianCalendar();
+		Calendar calLastDayOfWeek = new GregorianCalendar();
+		calLastDayOfWeek.set(Calendar.DAY_OF_MONTH, calFistDayOfWeek.get(Calendar.DAY_OF_MONTH)+15);
+		
+		String selection = Events.DTSTART + " > ? AND " + Events.DTEND + " < ?";
+		String[] selecionArgs = new String[]{String.valueOf(calFistDayOfWeek.getTimeInMillis()),
+				String.valueOf(calLastDayOfWeek.getTimeInMillis())};
+		
+		Cursor cursor = contentResolver.query(mUriEvent, projectionEvents,
+				selection, selecionArgs, Events.DTSTART + " ASC");
+		
+
+		if (cursor.moveToFirst()){
+			do{
+				Long id_evento = cursor.getLong(0);
+				if (cursor.getInt(5) != Events.AVAILABILITY_BUSY) continue;
+				Agendamento agendamento = dao.getAgendamentoByEventoId(id_evento);
+				if (agendamento != null){
+					lista.add(agendamento);
+					continue;
+				}else{
+					
+					agendamento = new Agendamento(
+							cursor.getString(1), cursor.getString(2),
+							cursor.getLong(3), cursor.getLong(4), id_evento
+							);
+					lista.add(agendamento);
+					
+					Log.i("EventoTitulo", "Titulo: " + cursor.getString(1));
+				}
+			}while(cursor.moveToNext());
+		}
+		cursor.close();
+		dao.createAtCascade(lista);
+		dao.close();
+		return lista;
+
+	}
+
+	public ArrayList<Agendamento> getEvents(long dataLimiteTimeInMillis) {
+		dao.open();
+		ArrayList<Agendamento> lista = new ArrayList<Agendamento>();
+		
+		if (dataLimiteTimeInMillis != -1L){
+			Calendar calFistDayOfWeek = new GregorianCalendar();
+			
+			Log.i("EventoCaptura", "Iniciando a captura dos eventos da dataInMillis " +
+					calFistDayOfWeek.getTimeInMillis() +
+					" até a dataInMillis " +
+					dataLimiteTimeInMillis);
+			
+			String selection = Events.DTSTART + " >= ? AND " + Events.DTEND + " <= ?";
+			String[] selecionArgs = new String[]{
+					String.valueOf(calFistDayOfWeek.getTimeInMillis()),
+					String.valueOf(dataLimiteTimeInMillis)};
+			
+			Cursor cursor = contentResolver.query(mUriEvent, projectionEvents,
+					selection, selecionArgs, Events.DTSTART + " ASC");
+			
+			Log.i("EventoCursor", "Tamanho do cursor: " + cursor.getCount());
+
+			cursor.moveToFirst();
+			if (!cursor.isAfterLast()){
+				do{
+					Long id_evento = cursor.getLong(0);
+					if (cursor.getInt(5) != Events.AVAILABILITY_BUSY) continue;
+					Agendamento agendamento = dao.getAgendamentoByEventoId(id_evento);
+					if (agendamento != null){
+//						lista.add(agendamento);
+						continue;
+					}else{
+						agendamento = new Agendamento();
+						agendamento.setTitulo(cursor.getString(1));
+						agendamento.setDescricao(cursor.getString(2));
+						agendamento.setDataInicial(cursor.getLong(3));
+						agendamento.setDataFinal(cursor.getLong(4));
+						agendamento.setId_evento(id_evento);
+						
+						lista.add(agendamento);
+						Log.i("EventoTitulo", "Titulo: " + cursor.getString(1));
+					}
+				}while(cursor.moveToNext());
+			}else{
+				Log.i("EventoCaptura", "O cursor está vazio.");
+			}
+
+			cursor.close();
+			dao.createAtCascade(lista);
+			dao.close();
+		}else{
+			Log.i("EventoCaptura", "Não foi capturado uma data. O valor passada para data foi: " + dataLimiteTimeInMillis);
+		}
+		
+		return lista;
+
+	}
+}

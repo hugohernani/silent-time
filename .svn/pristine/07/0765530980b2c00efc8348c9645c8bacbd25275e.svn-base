@@ -1,0 +1,59 @@
+package persistencia;
+
+import java.util.ArrayList;
+
+import persistencia.Banco.EntrySugestao;
+import model.Sugestao;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+public class SugestaoDao {
+	
+	private SQLiteDatabase database;
+	private Banco.BancoOpenHelper sqliteOpenHelper;
+	
+	public SugestaoDao(Context context){
+		sqliteOpenHelper = new Banco.BancoOpenHelper(context);
+	}
+	
+	public void open(){
+		database = sqliteOpenHelper.getWritableDatabase();
+	}
+	
+	public void close(){
+		sqliteOpenHelper.close();
+	}
+	
+	public boolean create(Sugestao sugestao){
+		ContentValues values = new ContentValues();
+		values.put(EntrySugestao.SUGESTOES_ITEM, sugestao.getItem());
+		values.put(EntrySugestao.SUGESTOES_REPETICAO, sugestao.getRepeticao());
+		
+		return database.insert(EntrySugestao.TABLE_SUGESTOES, null, values)!=-1?true:false;
+	}
+	
+	public ArrayList<Sugestao> getSugestoes(){
+		open();
+		ArrayList<Sugestao> lista = new ArrayList<Sugestao>();
+		
+		Cursor c = database.query(EntrySugestao.TABLE_SUGESTOES, EntrySugestao.columns,
+				null, null, null, null, null);
+		
+		if (c.moveToFirst()){
+			do{
+				Sugestao sugestao = new Sugestao(
+						c.getLong(0),
+						c.getString(1),
+						c.getInt(2));
+				lista.add(sugestao);
+			}while(c.moveToNext());
+		}
+		
+		close();
+		c.close();
+		return lista;
+	}
+
+}

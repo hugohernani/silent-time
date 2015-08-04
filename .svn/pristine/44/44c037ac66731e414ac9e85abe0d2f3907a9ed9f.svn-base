@@ -1,0 +1,103 @@
+package fragments;
+
+import ia.hugo.silencetime.R;
+import ia.hugo.silencetime.SilenciarOpcoes;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import model.Sugestao;
+import persistencia.SugestaoDao;
+import utils.SugestoesAdapter;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
+
+public class SugestoesFragment extends Fragment {
+	
+	private SharedPreferences prefs;
+	
+	public final static String namePreferencesSugestoes = "SUGESTOES_PREFERENCES";
+	
+	public interface SugestoesFragmentInterface{
+		public void setTempoDeEspera(Integer tempoDeEspera);
+		public void changeTab(String tag);
+	}
+	
+	private SugestoesFragmentInterface interfaceSugestoesFragment;
+	
+	
+	private SugestoesAdapter adapterSugestoes;
+	private List<Sugestao> listaSugestoes;
+	private ListView lvSugestoes;
+	private SugestaoDao daoSugestao;
+	
+	//listeners
+	OnItemClickListener listenerSugestaoSelecionada = new OnItemClickListener() {
+
+		@Override
+		public void onItemClick(AdapterView<?> adapterView, View view, int position,
+				long id) {
+			Sugestao mSugestao = daoSugestao.incrementarRepeticao(
+					adapterSugestoes.getItem(position));
+			
+			listaSugestoes.set(position, mSugestao);
+			adapterSugestoes.notifyDataSetChanged();
+			interfaceSugestoesFragment.setTempoDeEspera(mSugestao.getTempoDeEspera());
+			interfaceSugestoesFragment.changeTab("Tab2");
+		}
+	};
+
+	public void onAttach(android.app.Activity activity) {
+		super.onAttach(activity);
+		try{
+			interfaceSugestoesFragment = (SugestoesFragmentInterface) activity;
+		}catch(ClassCastException c){
+			throw new ClassCastException(activity.toString() + " deve implementar  SugestoesFragmentInterface ");
+		}
+	};
+	
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		prefs = getActivity().getSharedPreferences(namePreferencesSugestoes, Context.MODE_PRIVATE);
+		
+		daoSugestao = new SugestaoDao(getActivity());
+		
+		listaSugestoes = daoSugestao.getSugestoes();
+		Collections.sort(listaSugestoes);
+		
+		adapterSugestoes = new SugestoesAdapter(getActivity(), listaSugestoes);
+		
+	};
+	
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		
+		View v = inflater.inflate(R.layout.silenciar_sugestoes, container, false);
+		lvSugestoes = (ListView) v.findViewById(R.id.lvSugestoes);
+		lvSugestoes.setAdapter(adapterSugestoes);
+		
+		lvSugestoes.setOnItemClickListener(listenerSugestaoSelecionada);
+		
+		return v;
+	}
+	
+	@Override
+	public void onDestroy() {
+		
+		daoSugestao.decrementarTodos(listaSugestoes);
+		
+		super.onDestroy();
+	}
+
+}

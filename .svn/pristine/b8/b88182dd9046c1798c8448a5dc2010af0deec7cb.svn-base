@@ -1,0 +1,188 @@
+package model;
+
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+public class Agendamento{
+	
+	private Long id;
+	private String titulo;
+	private String descricao;
+	private Long dataInicial;
+	private Long dataFinal;
+	private Integer peso;
+	private Long id_evento;
+	
+	
+	public Agendamento(String titulo, String descricao,
+			Long dataInicial, Long dataFinal, Long id_evento) {
+		this.titulo = titulo;
+		this.descricao = descricao;
+		this.dataInicial = dataInicial;
+		this.dataFinal = dataFinal;
+		this.peso = 1;
+		this.id_evento = id_evento;
+	}
+
+	public Agendamento(Long id, String titulo, String descricao,
+			Long dataInicial, Long dataFinal, Integer peso, Long id_evento) {
+		this.id = id;
+		this.titulo = titulo;
+		this.descricao = descricao;
+		this.dataInicial = dataInicial;
+		this.dataFinal = dataFinal;
+		this.peso = peso;
+		this.id_evento = id_evento;
+	}
+	
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getTitulo() {
+		return titulo;
+	}
+
+	public void setTitulo(String titulo) {
+		this.titulo = titulo;
+	}
+
+	public String getDescricao() {
+		return descricao;
+	}
+
+	public void setDescricao(String descricao) {
+		this.descricao = descricao;
+	}
+
+	public Long getDataInicial() {
+		return dataInicial;
+	}
+
+	public void setDataInicial(Long dataInicial) {
+		this.dataInicial = dataInicial;
+	}
+
+	public Long getDataFinal() {
+		return dataFinal;
+	}
+
+	public void setDataFinal(Long dataFinal) {
+		this.dataFinal = dataFinal;
+	}
+
+	public Integer getPeso() {
+		return peso;
+	}
+
+	public void setPeso(Integer peso) {
+		this.peso = peso;
+	}
+	
+	public Long getId_evento() {
+		return id_evento;
+	}
+
+	public void setId_evento(Long id_evento) {
+		this.id_evento = id_evento;
+	}
+
+	@Override
+	public String toString() {
+		return "Titulo: " + titulo + ", " + "Inicia em: " + getData(dataInicial) +
+				", Termina em: " + getData(dataFinal);
+	}
+	
+	public String getData(Long data){
+		Date date = new Date(data);
+		DateFormat df = java.text.DateFormat.getDateInstance(DateFormat.SHORT, new Locale("pt,br"));
+		return df.format(date);
+	}
+	
+	
+/*
+	public Agendamento(long id, Integer diaDaSemana,
+			String dataInicio, String dataFinal,
+			int peso) {
+		this.id = id;
+		this.diaDaSemana = diaDaSemana;
+		this.horaInicial = dataInicio;
+		this.horaFinal = dataFinal;
+		this.peso = peso;
+	}
+
+	public Agendamento(long long1, String string, String string2,
+			Date dataInicial, Date dataTermino, Integer modoOcupado) {
+		// TODO Auto-generated constructor stub
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getHoraInicial() {
+		return horaInicial;
+	}
+
+	public void setHoraInicial(String horaInicial) {
+		this.horaInicial = horaInicial;
+	}
+
+	public String getHoraFinal() {
+		return horaFinal;
+	}
+
+	public void setHoraFinal(String horaFinal) {
+		this.horaFinal = horaFinal;
+	}
+
+	public Integer getPeso() {
+		return peso;
+	}
+
+	public void setPeso(Integer peso) {
+		this.peso = peso;
+	}
+
+	public Integer getDiaDaSemana() {
+		return diaDaSemana;
+	}
+
+	public void setDiaDaSemana(Integer diaDaSemana) {
+		this.diaDaSemana = diaDaSemana;
+	}
+	
+	@Override
+	public String toString() {
+		return diaDaSemana + " , " + horaInicial + "--" + horaFinal + ", " + peso + ";";
+	}
+	
+	
+
+ * (non-Javadoc)
+ * @see java.lang.Comparable#compareTo(java.lang.Object)
+ * 
+ * Responsável por comparar a menor horainicial.
+ * Útil para ordenar uma lista de agendamento
+ 
+	@Override
+	public int compareTo(Agendamento outroAgendamento) {
+		Double hrInicial = Double.valueOf(horaInicial);
+		Double hrInicial2 = Double.valueOf(outroAgendamento.horaInicial);
+		if (hrInicial < hrInicial2)	return -1;
+		else if(hrInicial > hrInicial2) return 1;
+		return 0;
+	}
+	
+*/	
+}

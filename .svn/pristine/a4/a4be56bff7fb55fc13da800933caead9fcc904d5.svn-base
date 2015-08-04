@@ -1,0 +1,201 @@
+package ia.hugo.silencetime;
+
+import java.util.List;
+
+import model.Agendamento;
+import persistencia.AgendamentoSilenciosoDao;
+import fragments.ListaAgendamentosFragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.app.NotificationManager;
+import android.os.Bundle;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.widget.DrawerLayout;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.Toast;
+
+public class ListaAgendamentosActivity extends FragmentActivity{
+	
+	private DrawerLayout mDrawerLayout;
+	private LinearLayout mDrawerLinear;
+	
+	private ListView mDrawerList;
+	private ArrayAdapter<String> adapterDias;
+	private String[] listaDias = new String[]{
+			"Domingo","Segunda-feira",
+			"Terça-feira","Quarta-feira",
+			"Quinta-feira","Sexta-feira",
+			"Sábado"};
+
+	private ActionBarDrawerToggle mDrawerToggle;
+	
+	private String mTitle = "";
+	
+	private FragmentManager fm;
+	
+	//listeners
+	OnItemClickListener listenerClickDrawerList = new OnItemClickListener() {
+
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int pos,
+				long id) {
+			mTitle = adapterDias.getItem(pos);
+			
+			openAgendamentosByDia(mTitle);
+			
+			mDrawerLayout.closeDrawer(mDrawerLinear);
+		}
+
+	};
+
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_lista_agendamentos);
+		
+		fm = getFragmentManager();
+		
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		mDrawerLinear = (LinearLayout) findViewById(R.id.left_drawer_layout);
+
+		mDrawerList = (ListView) findViewById(R.id.drawer_list);
+		
+		adapterDias = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, listaDias);
+		mDrawerList.setAdapter(adapterDias);
+		
+		mTitle = adapterDias.getItem(0);
+		
+		mDrawerToggle = new ActionBarDrawerToggle(
+				this, mDrawerLayout,
+				R.drawable.olho_humano,
+				R.string.drawer_open,
+				R.string.drawer_close){
+			
+			public void onDrawerClosed(View v){
+				getActionBar().setTitle(mTitle);
+				invalidateOptionsMenu();
+			}
+			
+			public void onDrawerOpened(View v){
+				getActionBar().setTitle("Selecione o dia");
+				invalidateOptionsMenu();
+			}
+		};
+
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		mDrawerLayout.setDrawerListener(mDrawerToggle);
+		
+		// habilitando o botÃ£o home
+		getActionBar().setHomeButtonEnabled(true);
+		
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+		// deixar o Ã­cone padrÃ£o da aplicaÃ§Ã£o em modo transparente
+		getActionBar().setIcon(android.R.color.transparent);
+		
+		mDrawerList.setOnItemClickListener(listenerClickDrawerList);
+
+	}
+	
+	private void openAgendamentosByDia(String mTitle) {
+		
+		// tratar abrir pelo dia selecionado
+		
+		ListaAgendamentosFragment frag = new ListaAgendamentosFragment();
+
+		FragmentTransaction ft = fm.beginTransaction();
+		
+		ft.replace(R.id.content_frame, frag);
+		
+		ft.commit();
+
+		
+	}
+
+	
+	@Override
+	protected void onPostCreate(Bundle savedInstanceState) {
+		super.onPostCreate(savedInstanceState);
+		mDrawerToggle.syncState();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.lista_agendamentos, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (mDrawerToggle.onOptionsItemSelected(item)){
+			return true;
+		}
+		
+		switch (item.getItemId()) {
+		case R.id.itApagarTodosAgendamentos:
+			
+			AgendamentoSilenciosoDao dao = new AgendamentoSilenciosoDao(this);
+			dao.open();
+			
+			NotificationManager notificationManager = (NotificationManager)
+					this.getSystemService(NOTIFICATION_SERVICE);
+			
+			List<Agendamento> agendamentos = dao.getAll();
+			
+			if (dao.deleteAll()){
+				for (Agendamento agendamento : agendamentos) {
+					notificationManager.cancel(agendamento.getId_evento().intValue()
+							+ agendamento.getDataInicial().intValue());
+					
+					notificationManager.cancel(agendamento.getId_evento().intValue()
+							+ agendamento.getDataFinal().intValue());
+				}
+				
+				/*
+				 *  TODO chamar uma interface que possibilite apagar
+				 *  todos os agendamentos contidos na lista presente
+				 *  no fragment ListaAgendamentosFragment.
+				 *  Será necessário criar essa interface e fazer um
+				 *  cast quando no método openAgendamentosByDay
+				 */
+				
+				
+				Toast.makeText(this, "Todos os agendamentos foram apagados!", Toast.LENGTH_SHORT).show();
+			}else{
+				Toast.makeText(this, "Não foi possível apagar. Contate o criador para maiores informações", Toast.LENGTH_SHORT).show();
+			}
+			break;
+
+		default:
+			break;
+		}
+		
+		
+		return super.onOptionsItemSelected(item);
+	}
+	
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		
+		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerLinear);
+		
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+
+}
+

@@ -1,0 +1,277 @@
+package ia.work.silencetime;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import fragments.AgendamentosFragment;
+
+import ia.hugo.silencetime.R;
+import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.app.ListActivity;
+import android.os.Bundle;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
+import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.Toast;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.LinearLayout;
+
+public class AgendamentosActivity extends Activity{
+
+	private HashMap<Integer, Integer> hMIdtoDay;
+	private List<CheckBox> listCheckDias;
+	private ArrayList<Integer> listaDiasAgendados;
+
+	private HashMap<Integer, Integer> hMIdtoPeso;
+	private List<CheckBox> listCheckPesos;
+	private ArrayList<Integer> listPesosEscolhidos;
+
+	private FragmentManager fm;
+	
+
+	private ActionBarDrawerToggle mDrawerToggle;
+	
+	private String mTitle = "";
+	private DrawerLayout mDrawerLayout;
+	private LinearLayout mDrawerLinear;
+	private Button btAllDaysDrawerLayout;
+	private CheckBox cbSegundaDrawerLayout;
+	private CheckBox cbTercaDrawerLayout;
+	private CheckBox cbQuartaDrawerLayout;
+	private CheckBox cbQuintaDrawerLayout;
+	private CheckBox cbSextaDrawerLayout;
+	private CheckBox cbSabadoDrawerLayout;
+	private CheckBox cbDomingoDrawerLayout;
+	private Button btTodosOsPesos;
+	private CheckBox cbPeso3;
+	private CheckBox cbPeso2;
+	private CheckBox cbPeso1;
+	private Button btFiltrar;
+	
+	//listeners
+	OnClickListener listenerAllDaysSelected = new OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			selecionarTodosOsDias();
+		}
+
+	};
+	OnCheckedChangeListener listenerDayCheckedChange = new OnCheckedChangeListener() {
+		
+		@Override
+		public void onCheckedChanged(CompoundButton btArg, boolean isChecked) {
+			Integer dia = hMIdtoDay.get(btArg.getId());
+			
+			if (isChecked){
+				listaDiasAgendados.add(dia);
+				Log.i("DayChecked", "Dia adicionado: " + dia);
+			}
+			else{
+				listaDiasAgendados.remove(dia);
+				Log.i("DayChecked", "Dia removido: " + dia);
+			}
+			
+		}
+	};
+	OnClickListener listenerTodosOsPesos = new OnClickListener() {
+		
+		@Override
+		public void onClick(View arg0) {
+			selecaoTodosOsPesos();
+		}
+	};
+	OnCheckedChangeListener listenerPesoCheckedChange = new OnCheckedChangeListener() {
+		
+		@Override
+		public void onCheckedChanged(CompoundButton btArg, boolean isChecked) {
+			Integer peso = hMIdtoPeso.get(btArg.getId());
+			
+			if (isChecked){
+				listPesosEscolhidos.add(peso);
+				Log.i("PesoEscolha", "Peso selecionado: " + peso);
+			}
+			else{
+				listPesosEscolhidos.remove(peso);
+				Log.i("PesoEscolha", "Peso deselecionado: " + peso);
+			}
+			
+		}
+	};
+	OnClickListener listenerFiltrar = new OnClickListener() {
+		
+		@Override
+		public void onClick(View arg0) {
+			abrirAgendamentos();
+			
+		}
+	};
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.navigation_drawer_agendamentos);
+		
+		hMIdtoDay = new LinkedHashMap<Integer, Integer>(7);
+		hMIdtoPeso = new LinkedHashMap<Integer, Integer>(3);
+		
+		listaDiasAgendados = new ArrayList<Integer>(7);
+		listPesosEscolhidos = new ArrayList<Integer>(3);
+		fm = getFragmentManager();
+		
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+		mDrawerLinear = (LinearLayout) findViewById(R.id.left_drawer_layout);
+		btAllDaysDrawerLayout = (Button) findViewById(R.id.bTTodosAgendamentos);
+		cbSegundaDrawerLayout = (CheckBox) findViewById(R.id.cBAgendamentoSegunda);
+		cbTercaDrawerLayout = (CheckBox) findViewById(R.id.cBAgendamentoTerca);
+		cbQuartaDrawerLayout = (CheckBox) findViewById(R.id.cBAgendamentoQuarta);
+		cbQuintaDrawerLayout = (CheckBox) findViewById(R.id.cBAgendamentoQuinta);
+		cbSextaDrawerLayout = (CheckBox) findViewById(R.id.cBAgendamentoSexta);
+		cbSabadoDrawerLayout = (CheckBox) findViewById(R.id.cBAgendamentoSabado);
+		cbDomingoDrawerLayout = (CheckBox) findViewById(R.id.cBAgendamentoDomingo);
+		btTodosOsPesos = (Button) findViewById(R.id.cBTodosOsPesos);
+		cbPeso3 = (CheckBox) findViewById(R.id.cBPeso3);
+		cbPeso2 = (CheckBox) findViewById(R.id.cBPeso2);
+		cbPeso1 = (CheckBox) findViewById(R.id.cBPeso1);
+		btFiltrar = (Button) findViewById(R.id.btFiltrar);
+		
+		listCheckDias = new ArrayList<CheckBox>(7);
+		listCheckPesos = new ArrayList<CheckBox>(3);
+		addCheckBoxToList();
+		addPesosToList();
+		selecionarTodosOsDias();
+		inicializacoes();
+
+		mDrawerToggle = new ActionBarDrawerToggle(
+				this, mDrawerLayout,
+				R.drawable.ic_launcher,
+				R.string.drawer_open,
+				R.string.drawer_close){
+			
+			public void onDrawerClosed(View v){
+				getActionBar().setTitle("Agendamentos");
+				invalidateOptionsMenu();
+			}
+			
+			public void onDrawerOpened(View v){
+				getActionBar().setTitle("Selecione o filtro");
+				invalidateOptionsMenu();
+			}
+		};
+		
+		// habilitando o botão home
+		getActionBar().setHomeButtonEnabled(true);
+		
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+		
+		// deixar o ícone padrão da aplicação em modo transparente
+		getActionBar().setIcon(android.R.color.transparent);
+		
+	}
+	
+
+	@Override
+	protected void onResume() {
+		
+		btAllDaysDrawerLayout.setOnClickListener(listenerAllDaysSelected);
+		btTodosOsPesos.setOnClickListener(listenerTodosOsPesos);
+		btFiltrar.setOnClickListener(listenerFiltrar);
+		mDrawerLayout.setDrawerListener(mDrawerToggle);
+		cbPeso3.setOnCheckedChangeListener(listenerPesoCheckedChange);
+		cbPeso2.setOnCheckedChangeListener(listenerPesoCheckedChange);
+		cbPeso1.setOnCheckedChangeListener(listenerPesoCheckedChange);
+		
+		super.onResume();
+	}
+
+	private void addCheckBoxToList() {
+		listCheckDias.add(cbDomingoDrawerLayout);
+		listCheckDias.add(cbSegundaDrawerLayout);
+		listCheckDias.add(cbTercaDrawerLayout);
+		listCheckDias.add(cbQuartaDrawerLayout);
+		listCheckDias.add(cbQuintaDrawerLayout);
+		listCheckDias.add(cbSextaDrawerLayout);
+		listCheckDias.add(cbSabadoDrawerLayout);
+		
+	}
+	
+	private void addPesosToList() {
+		listCheckPesos.add(cbPeso1);
+		listCheckPesos.add(cbPeso2);
+		listCheckPesos.add(cbPeso3);		
+	}
+
+
+	private void inicializacoes() {
+		for (int i = 0; i < listCheckDias.size(); i++) {
+			CheckBox cbTemp = listCheckDias.get(i);
+			hMIdtoDay.put(cbTemp.getId(), i);
+			
+			cbTemp.setOnCheckedChangeListener(listenerDayCheckedChange);
+			
+			listaDiasAgendados.add(i);
+		}
+		
+		for (int i = listCheckPesos.size()-1; i >= 0; i--) {
+			CheckBox cbTemp = listCheckPesos.get(i);
+			hMIdtoPeso.put(cbTemp.getId(), i+1);
+		}
+	}
+	
+	private void abrirAgendamentos() {
+		
+		AgendamentosFragment frag = new AgendamentosFragment();
+		
+		Bundle data = new Bundle();
+
+		data.putIntegerArrayList("diasSelecionados", listaDiasAgendados);
+		data.putIntegerArrayList("pesosSelecionados", listPesosEscolhidos);
+		
+		frag.setArguments(data);
+		
+		FragmentTransaction ft = fm.beginTransaction();
+		
+		ft.replace(R.id.content_frame, frag);
+		
+		ft.commit();
+		
+		mDrawerLayout.closeDrawer(mDrawerLinear);
+		mDrawerLayout.openDrawer(mDrawerLinear);
+
+	}
+
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.agendamentos, menu);
+		return true;
+	}
+	
+	private void selecionarTodosOsDias() {
+		boolean estado = listaDiasAgendados.size() != 7?true:false;
+		for (CheckBox cbTemp : listCheckDias) {
+			cbTemp.setChecked(estado);
+		}
+	}
+	
+	private void selecaoTodosOsPesos() {
+		boolean estado = listPesosEscolhidos.size() != 3?true:false;
+		for (CheckBox cbTemp : listCheckPesos) {
+			cbTemp.setChecked(estado);
+		}
+	}
+
+
+}

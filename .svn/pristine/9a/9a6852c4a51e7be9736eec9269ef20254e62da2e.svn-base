@@ -1,0 +1,164 @@
+package ia.hugo.silencetime;
+
+import java.util.List;
+
+import model.Agendamento;
+import model.TempoAgendamentoSugestao;
+import persistencia.AgendamentoSilenciosoDao;
+import persistencia.EventsAndroid;
+import persistencia.TASDao;
+import utils.TASAdapter;
+import android.app.DialogFragment;
+import android.app.ListActivity;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Toast;
+import fragments.SugestaoSelecionadaFragment;
+import fragments.SugestaoSelecionadaFragment.SugestaoSelecionadaInterface;
+
+public class ListaSugestoesAgendamentoActivity extends ListActivity
+	implements OnItemClickListener, SugestaoSelecionadaInterface{
+	
+	private static final int REQUEST_CODE_FROM_EVENT = 423252;
+	private List<TempoAgendamentoSugestao> lista;
+	private TASAdapter adapterTas;
+	private TASDao daoTas;
+	private TempoAgendamentoSugestao mTas;
+	
+	DialogFragment newFragment;
+	
+	public static final String ID_TAS = "ID_TAS";
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_lista_sugestoes_agendamento);
+
+		newFragment = new SugestaoSelecionadaFragment();
+		
+		daoTas = new TASDao(this);
+		
+		lista = daoTas.getAll();
+		adapterTas = new TASAdapter(this, lista);
+		setListAdapter(adapterTas);
+		
+		Bundle extras = getIntent().getExtras();
+		
+		if (extras != null){
+			mTas = daoTas.getTasbyId(extras.getLong(ID_TAS, -1L));
+			if (mTas != null){
+				newFragment.show(getFragmentManager(), "sugestaoSelecionada");
+			}
+		}
+		
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		getListView().setOnItemClickListener(this);
+		
+	}
+	
+	@Override
+	protected void onDestroy() {
+		
+		daoTas.decrementarTodos();
+		
+		super.onDestroy();
+	}
+	
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.lista_sugestoes_agendamento, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		
+		switch (item.getItemId()) {
+		case R.id.itDeleteAllSugestoesAgendamento:
+			if (daoTas.deleteAll()){
+				Toast.makeText(this, "Todas as sugestões foram apagadas!", Toast.LENGTH_LONG).show();
+				adapterTas.clear();
+			}
+			break;
+
+		default:
+			break;
+		}
+		
+		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> adapter, View view, int position, final long id) {
+		mTas = adapterTas.getItem(position);
+		newFragment.show(getFragmentManager(), "sugestaoSelecionada");
+		
+	}
+
+	@Override
+	public TempoAgendamentoSugestao getTas() {
+		return mTas;
+	}
+
+	@Override
+	public void onNegativeClick(DialogFragment dialog) {
+		if (daoTas.deleteById(mTas.getId())){
+			Toast.makeText(getApplicationContext(), "Sugestão apagada!", Toast.LENGTH_SHORT).show();
+		}
+		
+	}
+
+	@Override
+	public void onNeutralClick(DialogFragment dialog) {
+		Toast.makeText(getApplicationContext(), "Cancelado.", Toast.LENGTH_SHORT).show();		
+	}
+
+	@Override
+	public void onPositiveClick(DialogFragment dialog, String titulo,
+		String descricao, Long timeInicial, Long timeFinal,
+		Integer qntRepeticoes) {
+	
+		Intent intent = new Intent(Intent.ACTION_INSERT);
+		intent.setData(Events.CONTENT_URI);
+		intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, timeInicial);
+		intent.putExtra(Events.TITLE, titulo);
+		intent.putExtra(Events.DESCRIPTION, descricao);
+		intent.putExtra(Events.RRULE, "FREQ=WEEKLY;COUNT="+qntRepeticoes+";WKST=SU");
+		startActivityForResult(intent, REQUEST_CODE_FROM_EVENT);
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		if (requestCode == REQUEST_CODE_FROM_EVENT){
+			
+			if (resultCode == RESULT_OK){
+				
+				Uri eventUri = data.getData();
+				
+				EventsAndroid events = new EventsAndroid(this);
+				if (events.saveAgendamentoByUri(eventUri)){
+					daoTas.deleteById(mTas.getId());
+					Toast.makeText(this, "Agendamento criado!", Toast.LENGTH_LONG).show();
+				}
+				
+			}
+		}
+	}
+
+}

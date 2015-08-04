@@ -1,0 +1,124 @@
+package fragments;
+
+import ia.hugo.silencetime.R;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+import model.Agendamento;
+
+import persistencia.AgendamentoSilenciosoDao;
+
+import utils.DiaExpandableListAdapter;
+import utils.PesoExpandableListAdapter;
+
+import android.app.Activity;
+import android.app.Fragment;
+import android.content.Context;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.Toast;
+
+public class AgendamentosFragment extends Fragment{
+
+	private AgendamentoSilenciosoDao daoAgendamentos;
+	private Context _context;
+	
+	private HashMap<Integer, String> hmDiatoExtenso;
+	private ArrayList<Integer> diasSelecionados;
+	private ArrayList<Integer> pesosSelecionados;
+	
+	
+	private DiaExpandableListAdapter dialistAdapter;
+	private ExpandableListView diaExpListView;
+	private List<String> diaListDataHeader;
+	private PesoExpandableListAdapter pesolistAdapter;
+	private List<String> pesoListDataHeader;
+	private HashMap<String, List<Agendamento>> pesolistDataChild;
+	
+	
+	public void onAttach(Activity activity) {
+		this._context = activity;
+		super.onAttach(activity);
+	};
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		
+		Bundle argumentos = getArguments();
+		diasSelecionados = argumentos.getIntegerArrayList("diasSelecionados");
+		pesosSelecionados = argumentos.getIntegerArrayList("pesosSelecionados");
+
+		hmDiatoExtenso = new LinkedHashMap<Integer, String>(7);
+		final String[] dias = {"Domingo","Segunda-feira","Terça-feira",
+				"Quarta-feira","Quinta-feira","Sexta-feira","Sábado"};
+		for (int i = 0; i < dias.length; i++) {
+			hmDiatoExtenso.put(i, dias[i]);
+		}
+		
+		daoAgendamentos = new AgendamentoSilenciosoDao(_context);
+		prepareList();
+		
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		
+		View viewRoot = inflater.inflate(R.layout.fragment_agendamentos, container,false);
+
+		pesolistAdapter = new PesoExpandableListAdapter(_context, pesoListDataHeader, pesolistDataChild);		
+
+		diaExpListView = (ExpandableListView) viewRoot.findViewById(R.id.diasExpandableLV);
+		dialistAdapter = new DiaExpandableListAdapter(_context, diaListDataHeader, pesolistAdapter);
+		diaExpListView.setAdapter(dialistAdapter);
+		
+		
+		Log.i("Info", "Retornando a view de AgendamentoFragment");
+		return viewRoot;
+	}
+	
+	private void prepareList() {
+/*		daoAgendamentos.open();
+		
+		diaListDataHeader = new ArrayList<String>();
+		pesoListDataHeader = new ArrayList<String>();
+		pesolistDataChild = new LinkedHashMap<String, List<Agendamento>>(3);
+		for (int i = 0; i < diasSelecionados.size(); i++) {
+			Integer dia = diasSelecionados.get(i);
+			String diaExtenso = hmDiatoExtenso.get(dia);
+//			diaListDataHeader.add(diaExtenso);
+			for (int j = pesosSelecionados.size()-1; j >= 0; j--) {
+				Integer peso = pesosSelecionados.get(j);
+				String pesoString = "Peso " + peso;
+				if (!pesoListDataHeader.contains(pesoString))
+					pesoListDataHeader.add(pesoString);
+
+				List<Agendamento> listTemp = daoAgendamentos.getAgendamentoByDayAprendido(dia,peso);
+				
+				
+				for (Agendamento agendamento : listTemp) {
+					Log.i("Teste","Dia da semana");
+					if (dia == agendamento.getDiaDaSemana() &&
+							!diaListDataHeader.contains(diaExtenso)){
+						diaListDataHeader.add(diaExtenso);
+						pesolistDataChild.put(pesoString, listTemp);
+					}
+				}
+			}
+		}
+		
+		daoAgendamentos.close();
+*/		
+	}
+}

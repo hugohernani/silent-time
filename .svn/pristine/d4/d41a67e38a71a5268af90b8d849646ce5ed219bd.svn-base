@@ -1,0 +1,137 @@
+package services;
+
+import android.app.IntentService;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.util.Log;
+import broadcasts.ModoSomAlteradoBroadcastReceiver;
+
+public class PercepcaoMudanca extends IntentService{
+	
+	private final String percepcaoEstado = "PERCEPCAO_ESTADO_SILENT_TIME";
+	
+	private static SharedPreferences prefs;
+	private static Editor editor;
+
+	private static final String keyModoAprendiz = "MODO_APRENDIZ";
+	private static final String keyModoAutomatico = "MODO_AUTOMATICO";
+	private static Context contexto;
+	private static Intent intentServiceAlarm;
+	private static ModoSomAlteradoBroadcastReceiver mReceiverSound;
+	
+	public PercepcaoMudanca() {
+		super("Percepção_Silence_Time");
+	}
+	
+	@Override
+	public void onCreate() {
+		contexto = getApplicationContext();
+		prefs = getSharedPreferences(percepcaoEstado, MODE_PRIVATE);
+		editor = prefs.edit();
+				
+		super.onCreate();
+	}
+	
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		onHandleIntent(intent);		
+		return START_STICKY;
+	}
+
+	@Override
+	protected void onHandleIntent(Intent intent) {
+		
+		boolean modoAprendiz = prefs.getBoolean(keyModoAprendiz, false);
+		boolean modoAutomatico = prefs.getBoolean(keyModoAutomatico, false);
+		
+		if (modoAprendiz){
+			iniciarReceiverSound();
+		}
+		if (modoAutomatico){
+			iniciarServiceAlarm();
+		}
+	}
+
+	public static boolean isModoAutomatico(){
+		return prefs.getBoolean(keyModoAutomatico, false);
+	}
+
+	public static void setModoAutomatico(Context context, boolean modoAutomaticoState){
+		contexto = context;
+		editor.putBoolean(keyModoAutomatico, modoAutomaticoState);
+		editor.commit();
+		verificarServiceAlarme();
+		
+	}
+	
+	private static void verificarServiceAlarme(){
+		verificarServiceAlarme(prefs.getBoolean(keyModoAutomatico, false));
+	}
+
+	private static void verificarServiceAlarme(boolean automatico) {
+		if (automatico){
+			if (intentServiceAlarm == null) iniciarServiceAlarm();
+			contexto.startService(intentServiceAlarm);
+		}else{
+			if (intentServiceAlarm != null){
+				contexto.stopService(intentServiceAlarm);
+				intentServiceAlarm = null;
+			}
+		}
+	}
+
+	private static void iniciarServiceAlarm() {
+		intentServiceAlarm = new Intent(contexto, AlarmesService.class);
+		intentServiceAlarm.setAction("services.AlarmesService");
+		Log.i("percepcaoMudancao-ServiceAlarm", "A iniciar o serviÃ§o para alarmar!");
+		contexto.startService(intentServiceAlarm);
+		
+	}
+	
+	public static boolean isModoAprendiz() {
+		return prefs.getBoolean(keyModoAprendiz, false);
+	}
+
+	public static void setModoAprendiz(Context context, boolean modoAprendizState) {
+		contexto = context;
+		Log.i("EstadoAprendiz", "Estado aprendiz: " + modoAprendizState);
+		editor.putBoolean(keyModoAprendiz, modoAprendizState);
+		editor.commit();
+		verificarReceiver();
+	}
+
+	private static void verificarReceiver(boolean aprendendo) {
+		if (aprendendo){
+			if (mReceiverSound == null) iniciarReceiverSound();
+		}else{
+			Log.i("receiverSound", "Desativando o broadcast receiver para capturar os sons!");
+			if (mReceiverSound != null){
+				contexto.unregisterReceiver(mReceiverSound);
+				mReceiverSound = null;
+			}
+		}
+	}
+
+	private static void iniciarReceiverSound() {
+		mReceiverSound = new ModoSomAlteradoBroadcastReceiver();
+		contexto.registerReceiver(mReceiverSound,
+				new IntentFilter("android.media.RINGER_MODE_CHANGED"));
+		Log.i("receiverSound", "Iniciando o broadcast receiver para capturar os sons!");
+	}
+
+	public static void verificarReceiver(){
+		verificarReceiver(prefs.getBoolean(keyModoAprendiz, false));
+	}
+	
+	public static Boolean isBroadcastInRunning(){
+		return prefs.getBoolean(keyModoAprendiz, false);
+	}
+
+	public static Boolean areAlarmsInRunning(){
+		return prefs.getBoolean(keyModoAutomatico, false);
+	}
+	
+}

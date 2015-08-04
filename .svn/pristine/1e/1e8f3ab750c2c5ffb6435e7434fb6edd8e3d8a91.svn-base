@@ -1,0 +1,131 @@
+package persistencia;
+
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.BaseColumns;
+
+public class Banco {
+	
+	
+	// Campos database
+	private static final String DATABASE_NAME = "SilenceTime.db";
+	private static final int DATABASE_VERSION = 1;
+	
+	/*
+	 * Tabelas e suas colunas
+	 */
+		
+	public static interface EntryAgendamento extends BaseColumns{
+		public static final String TABLE_AGENDAMENTO = "agendamento";
+		public static final String AGENDAMENTO_COLUMN_TITULO = "titulo";
+		public static final String AGENDAMENTO_COLUMN_DESCRICAO = "descricao";
+		public static final String AGENDAMENTO_COLUMN_DATA_INICIAL = "data_inicial";
+		public static final String AGENDAMENTO_COLUMN_DATA_FINAL = "data_final";
+		public static final String AGENDAMENTO_COLUMN_PESO = "peso";
+		public static final String AGENDAMENTO_COLUMN_ID_EVENT = "id_evento";
+		
+		public static final String[] columns = {EntryAgendamento._ID,
+				EntryAgendamento.AGENDAMENTO_COLUMN_TITULO,
+				EntryAgendamento.AGENDAMENTO_COLUMN_DESCRICAO,
+				EntryAgendamento.AGENDAMENTO_COLUMN_DATA_INICIAL,
+				EntryAgendamento.AGENDAMENTO_COLUMN_DATA_FINAL,
+				EntryAgendamento.AGENDAMENTO_COLUMN_PESO,
+				EntryAgendamento.AGENDAMENTO_COLUMN_ID_EVENT
+		};
+
+	}
+	
+	public static interface EntrySugestao extends BaseColumns{
+		public static final String TABLE_SUGESTOES = "sugestoes";
+		public static final String SUGESTOES_ITEM = "item";
+		public static final String SUGESTOES_REPETICAO = "repeticao";
+		
+		public static final String[] columns = {
+				EntrySugestao._ID,
+				EntrySugestao.SUGESTOES_ITEM,
+				EntrySugestao.SUGESTOES_REPETICAO
+		};
+
+	}
+	/*
+	 * Entrada que armazena as colunas da tabela
+	 * TEMPO_AGENDAMENTO_SUGESTAO
+	 */
+	public static interface EntryTAS extends BaseColumns{
+		public static final String TABLE_TEMPO_AGENDAMENTO_SUGESTAO = "tempo_agendamento_sugestao";
+		public static final String TAS_TITULO = "titulo";
+		public static final String TAS_DESCRICAO = "descricao";
+		public static final String TAS_DIA_DA_SEMANA = "dia_da_semana";
+		public static final String TAS_HORA = "hora";
+		public static final String TAS_MINUTO = "minuto";
+		public static final String TAS_PESO = "peso";
+		
+		public static final String[] columns = {
+			TAS_TITULO,
+			TAS_DESCRICAO,
+			TAS_DIA_DA_SEMANA,
+			TAS_HORA,
+			TAS_MINUTO,
+			TAS_PESO
+		};
+	}
+	
+	public static class BancoOpenHelper extends SQLiteOpenHelper{
+		
+		public BancoOpenHelper(Context context) {
+			super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		}
+		
+		/*
+		 * Sql create
+		 */
+		private final String DATABASE_CREATE_TABLE_AGENDAMENTO = "create table "
+				+ EntryAgendamento.TABLE_AGENDAMENTO + "(" + EntryAgendamento._ID
+				+ " integer primary key, " + EntryAgendamento.AGENDAMENTO_COLUMN_TITULO
+				+ " text not null, " + EntryAgendamento.AGENDAMENTO_COLUMN_DESCRICAO
+				+ " text, " + EntryAgendamento.AGENDAMENTO_COLUMN_DATA_INICIAL
+				+ " integer, " + EntryAgendamento.AGENDAMENTO_COLUMN_DATA_FINAL
+				+ " integer, " + EntryAgendamento.AGENDAMENTO_COLUMN_PESO
+				+ " integer, " + EntryAgendamento.AGENDAMENTO_COLUMN_ID_EVENT
+				+ " integer"
+				+ ");";
+		
+		private final String DATABASE_CREATE_TABLE_SUGESTOES = "create table "
+				+ EntrySugestao.TABLE_SUGESTOES + "(" + EntrySugestao._ID
+				+ " integer primary key autoincrement, " + EntrySugestao.SUGESTOES_ITEM
+				+ " integer not null, " + EntrySugestao.SUGESTOES_REPETICAO
+				+ " integer"
+				+ ");";
+		
+		private final String DATABASE_CREATE_TABLE_TEMPO_AGENDAMENTO_SUGESTAO = "create table "
+				+ EntryTAS.TABLE_TEMPO_AGENDAMENTO_SUGESTAO + "("
+				+ EntryTAS._ID
+				+ " integer primary key autoincrement, " + EntryTAS.TAS_TITULO
+				+ " text not null, " + EntryTAS.TAS_DESCRICAO
+				+ " text, " + EntryTAS.TAS_DIA_DA_SEMANA
+				+ " integer not null, " + EntryTAS.TAS_HORA
+				+ " integer not null, " + EntryTAS.TAS_MINUTO
+				+ " integer, " + EntryTAS.TAS_PESO
+				+ " integer not null" 
+				+ ");";
+
+
+		@Override
+		public void onCreate(SQLiteDatabase db) {
+			db.execSQL(DATABASE_CREATE_TABLE_AGENDAMENTO);
+			db.execSQL(DATABASE_CREATE_TABLE_SUGESTOES);
+			db.execSQL(DATABASE_CREATE_TABLE_TEMPO_AGENDAMENTO_SUGESTAO);
+		}
+
+		@Override
+		public void onUpgrade(SQLiteDatabase db, int arg1, int arg2) {
+			db.execSQL("DROP TABLE IF EXISTS " + EntryAgendamento.TABLE_AGENDAMENTO);
+			db.execSQL("DROP TABLE IF EXISTS " + EntrySugestao.TABLE_SUGESTOES);
+			db.execSQL("DROP TABLE IF EXISTS " + EntryTAS.TABLE_TEMPO_AGENDAMENTO_SUGESTAO);
+			onCreate(db);
+		}
+
+	}
+
+}

@@ -1,0 +1,7 @@
+package interfaces;
+
+public interface MessageToast {
+	
+	void printToast(final String mensagem);
+
+}

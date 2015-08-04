@@ -1,0 +1,27 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/itSilenciar"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom"
+        android:title="Silenciar"/>
+    
+    <item
+        android:id="@+id/itListarControlesDeSom"
+        android:showAsAction="ifRoom"
+        android:title="Mostrar agendamentos"/>
+    
+    <item
+        android:id="@+id/itZerarSugestoes"
+        android:showAsAction="never"
+        android:title="Apagar todas as sugestões"/>
+    
+    <item
+        android:id="@+id/itListarTAS"
+        android:showAsAction="never"
+        android:title="Mostrar sugestões de agendamento aprendidas"/>
+    
+    
+    
+
+</menu>

@@ -1,0 +1,199 @@
+package fragments;
+
+import ia.hugo.silencetime.R;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
+import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.DatePicker;
+import android.widget.RadioGroup;
+import android.widget.TextView;
+import android.widget.TimePicker;
+import android.widget.TimePicker.OnTimeChangedListener;
+import android.widget.Toast;
+
+public class OpcoesPadraoFragment extends Fragment{
+	
+	public interface OpcoesPadraoFragmentInterface{
+		public String setDiasRestantes(Calendar calendar);
+		public void setHorarioEscolhido(int hour, int minute);
+		public void salvarSugestao(boolean salvarSugestao);
+	}
+	
+	private OpcoesPadraoFragmentInterface interfaceOpcoesPadraoFragment;
+	
+	private Calendar mCalendar;
+	
+	private RadioGroup rgOpcoes;
+	private TimePicker mTimePicker;
+	
+	private TextView tvDataEscolhida;
+	private TextView tvDiasRestantes;
+	
+	
+	public void onAttach(android.app.Activity activity) {
+		super.onAttach(activity);
+		try{
+			interfaceOpcoesPadraoFragment = (OpcoesPadraoFragmentInterface) activity;
+		}catch(ClassCastException e){
+			throw new ClassCastException(activity.toString() + " deve implementar OpcoesPadraoFragmentInterface");
+		}
+	};
+	
+	//listeners
+	RadioGroup.OnCheckedChangeListener listenerChangePadraoEscolhido = new
+			RadioGroup.OnCheckedChangeListener() {
+				
+				@Override
+				public void onCheckedChanged(RadioGroup group, int checkedId) {
+					switch (checkedId) {
+						case R.id.rbOpcaoPersonalizavel:
+
+							// o método callback setCalendarDiaPersonalizado é chamado pelo
+							// fragment abaixo quando a data é escolhida							
+							DiaPersonalizavelFragment dPF = new DiaPersonalizavelFragment(mCalendar, tvDataEscolhida, tvDiasRestantes, interfaceOpcoesPadraoFragment);
+							dPF.show(getActivity().getFragmentManager(), "dia_personalizado");
+
+							break;
+						case R.id.rbOpcaoMais7dias:
+							mCalendar = new GregorianCalendar();
+							mCalendar.set(Calendar.DAY_OF_MONTH, mCalendar.get(Calendar.DAY_OF_MONTH)+7);
+
+							setDateEscolhida(mCalendar);
+							tvDiasRestantes.setText(
+									interfaceOpcoesPadraoFragment.
+									setDiasRestantes(mCalendar));
+
+							break;
+						case R.id.rBOpcaoMais15Dias:
+							mCalendar = new GregorianCalendar();
+							
+							mCalendar.set(Calendar.DAY_OF_MONTH, mCalendar.get(Calendar.DAY_OF_MONTH)
+									+14); // TODO impreciso. Consertar
+
+							setDateEscolhida(mCalendar);
+							tvDiasRestantes.setText(
+									interfaceOpcoesPadraoFragment.
+									setDiasRestantes(mCalendar));
+							break;
+					}
+				}
+		};
+		
+		private OnTimeChangedListener listenerChangeTime = 
+				new OnTimeChangedListener() {
+					
+					@Override
+					public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+
+						interfaceOpcoesPadraoFragment.setHorarioEscolhido(hourOfDay, minute);
+						
+					}
+				};
+		
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			
+			mCalendar = new GregorianCalendar();
+			
+		};
+	
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		
+		View view = inflater.inflate(R.layout.silenciar_opcoes_padrao, container, false);
+		
+		rgOpcoes = (RadioGroup) view.findViewById(R.id.rGOpcoesPadroes);
+		mTimePicker = (TimePicker) view.findViewById(R.id.tpHorarioDia);
+		mTimePicker.setIs24HourView(true);
+		
+		tvDataEscolhida = (TextView) view.findViewById(R.id.tvDataEscolhida);
+		tvDiasRestantes = (TextView) view.findViewById(R.id.tvDiasRestantes);
+		
+		return view;
+	}
+	
+	@Override
+	public void onResume() {
+		rgOpcoes.setOnCheckedChangeListener(listenerChangePadraoEscolhido);
+		mTimePicker.setOnTimeChangedListener(listenerChangeTime);
+		
+		
+		super.onResume();
+	}
+	
+	public void setDateEscolhida(Calendar calendar) {
+		String data = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)) + "/"
+				+ String.valueOf(calendar.get(Calendar.MONTH)+1) + "/"
+				+ String.valueOf(calendar.get(Calendar.YEAR));
+		tvDataEscolhida.setText(data);
+	}
+	
+	
+	
+	@SuppressLint("ValidFragment")
+	public static class DiaPersonalizavelFragment extends DialogFragment
+	implements DatePickerDialog.OnDateSetListener{
+
+	private Calendar mCalendar;
+	private TextView mtvDataEscolhida;
+	private TextView mtvDiasRestantes;
+	private OpcoesPadraoFragmentInterface mInterfaceOpcoesPadrao;
+	
+	public DiaPersonalizavelFragment(Calendar calendar, TextView tvDataEscolhida,
+			TextView tvDiasRestantes, OpcoesPadraoFragmentInterface interfaceOpcoesPadrao){
+		this.mCalendar = calendar;
+		this.mtvDataEscolhida = tvDataEscolhida;
+		this.mtvDiasRestantes = tvDiasRestantes;
+		this.mInterfaceOpcoesPadrao = interfaceOpcoesPadrao;
+	}
+	
+	@Override
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
+
+		mCalendar = Calendar.getInstance();
+		int year = mCalendar.get(Calendar.YEAR);
+		int month = mCalendar.get(Calendar.MONTH);
+		int day = mCalendar.get(Calendar.DAY_OF_MONTH);
+		
+		return new DatePickerDialog(getActivity(), this, year, month, day+1);
+	}
+
+	@Override
+	public void onDateSet(DatePicker view, int year, int month, int day) {
+		
+		mCalendar.set(Calendar.YEAR, year);
+		mCalendar.set(Calendar.MONTH, month);
+		mCalendar.set(Calendar.DAY_OF_MONTH, day);
+		
+		if (mCalendar.getTimeInMillis() < System.currentTimeMillis()){
+			mtvDiasRestantes.setText("0");
+			mtvDataEscolhida.setText("Dia escolhido");
+			dismiss();
+		}else{
+			String data = String.valueOf(mCalendar.get(Calendar.DAY_OF_MONTH)) + "/"
+					+ String.valueOf(mCalendar.get(Calendar.MONTH)+1) + "/"
+					+ String.valueOf(mCalendar.get(Calendar.YEAR));
+			
+			mtvDataEscolhida.setText(data);
+			mtvDiasRestantes.setText(
+					mInterfaceOpcoesPadrao.setDiasRestantes(mCalendar));
+			
+			mInterfaceOpcoesPadrao.salvarSugestao(true);
+		}
+		
+	}
+	
+}
+
+}

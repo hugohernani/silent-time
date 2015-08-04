@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/tvTituloDialogTAS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Título: "
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/etTituloDialogTAS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10" >
+
+            <requestFocus />
+        </EditText>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/tvDescricaoDialogTAS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Descrição: "
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <EditText
+            android:id="@+id/etDescricaoDialogTAS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:lines="4"
+            android:ems="10" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvApartirDeDialogTAS"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:layout_marginTop="2dp"
+        android:text="A partir de..."
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/tvDiaDialogTas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dia" />
+
+        <TextView
+            android:id="@+id/tvDe1DialogTas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:text="de" />
+
+        <Spinner
+            android:id="@+id/spMesDialogTas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/mes_ano"
+            android:prompt="@string/label_choose_a_month"
+            android:spinnerMode="dropdown" />
+        
+        <TextView
+            android:id="@+id/tvDe2DialogTas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="2dp"
+            android:layout_marginRight="2dp"
+            android:text="de" />
+        
+        <TextView
+            android:id="@+id/tvAnoDialogTas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ano" />
+        
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvAteDialogTas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:layout_marginTop="2dp"
+        android:text="Até..."
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <DatePicker
+        android:id="@+id/dpAteDialogTas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
+
+</LinearLayout>

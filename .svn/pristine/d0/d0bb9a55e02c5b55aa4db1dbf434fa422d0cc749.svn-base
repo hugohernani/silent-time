@@ -1,0 +1,77 @@
+package fragments;
+
+import java.util.List;
+
+import persistencia.SugestaoDao;
+
+import model.Sugestao;
+import utils.SugestoesAdapter;
+import ia.hugo.silencetime.R;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.AdapterView.OnItemClickListener;
+
+public class SugestoesFragment extends Fragment {
+	
+	public interface SugestoesFragmentInterface{
+		public void setCalendarTimeInMillis(long timeInMillis);
+	}
+	
+	private SugestoesFragmentInterface interfaceSugestoesFragment;
+	
+	
+	private SugestoesAdapter adapterSugestoes;
+	private List<Sugestao> listaSugestoes;
+	private ListView lvSugestoes;
+	private SugestaoDao daoSugestao;
+	
+	//listeners
+	OnItemClickListener listenerSugestaoSelecionada = new OnItemClickListener() {
+
+		@Override
+		public void onItemClick(AdapterView<?> adapterView, View view, int position,
+				long id) {
+			long millisecondsSugestao = adapterSugestoes.getItem(position).getItemTimeInMillis();
+			interfaceSugestoesFragment.setCalendarTimeInMillis(millisecondsSugestao);
+		}
+	};
+
+	public void onAttach(android.app.Activity activity) {
+		super.onAttach(activity);
+		try{
+			
+		}catch(ClassCastException c){
+			throw new ClassCastException(activity.toString() + " deve implementar  SugestoesFragmentInterface ");
+		}
+	};
+	
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		daoSugestao = new SugestaoDao(getActivity());
+		listaSugestoes = daoSugestao.getSugestoes();
+		
+		adapterSugestoes = new SugestoesAdapter(getActivity(), listaSugestoes);
+		
+	};
+	
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		
+		View v = inflater.inflate(R.layout.silenciar_sugestoes, container, false);
+		lvSugestoes = (ListView) v.findViewById(R.id.lvSugestoes);
+		lvSugestoes.setAdapter(adapterSugestoes);
+		
+		lvSugestoes.setOnItemClickListener(listenerSugestaoSelecionada);
+		
+		// TODO outras views e viewgroup
+		
+		return v;
+	}
+
+}

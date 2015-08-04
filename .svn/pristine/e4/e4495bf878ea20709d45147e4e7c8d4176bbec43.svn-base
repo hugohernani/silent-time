@@ -1,0 +1,51 @@
+package broadcasts;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.media.AudioManager;
+import android.os.Bundle;
+import android.widget.Toast;
+
+public class ModoSomAlteradoBroadcastReceiver extends BroadcastReceiver {
+	
+	@SuppressLint("SimpleDateFormat")
+	SimpleDateFormat format = new SimpleDateFormat("HHmm");
+	
+	private static String horaInicial;
+	private String horaTermino;
+	
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		
+		Bundle extras = intent.getExtras();
+		int ringMode = extras.getInt(AudioManager.EXTRA_RINGER_MODE);
+		int diaDaSemana = -1;
+		Calendar cal = new GregorianCalendar();
+		if (ringMode == AudioManager.RINGER_MODE_VIBRATE){
+			horaInicial = format.format(cal.getTime());
+			Toast.makeText(context, "Primeiro hor√°rio: " + horaInicial, Toast.LENGTH_SHORT).show();
+		}else if (ringMode == AudioManager.RINGER_MODE_NORMAL){
+			if (horaInicial != null){
+				
+				// A parte abaixo est· comentada porque acabei agapando a classe ControleAgendamentoService...
+				
+				/*
+				horaTermino = format.format(cal.getTime());
+				Intent intentService = new Intent(context, ControleAgendamentoService.class);
+				diaDaSemana = cal.get(Calendar.DAY_OF_WEEK);
+				intentService.putExtra("diaDaSemana", diaDaSemana);
+				intentService.putExtra("horaInicio", horaInicial);
+				intentService.putExtra("horaTermino", horaTermino);
+				intentService.setAction("services.ControleAgendamentoService");
+				context.startService(intentService);
+				 */
+			}
+		}
+	}
+}

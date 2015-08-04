@@ -1,0 +1,257 @@
+package persistencia;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
+
+import persistencia.Banco.EntryAgendamento;
+
+import model.Agendamento;
+import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+import android.provider.CalendarContract.Calendars;
+import android.provider.CalendarContract.Events;
+import android.util.Log;
+
+public class AgendamentoSilenciosoDao {
+	
+	private String ultimoHorarioAgendado;
+	public static final int AGENDAMENTO_CRIADO = 1;
+	public static final int AGENDAMENTO_ATUALIZADO = 2;
+	private SQLiteDatabase database;
+	private Banco.BancoOpenHelper sqliteOpenHelper;
+	
+	public AgendamentoSilenciosoDao(Context context){
+		sqliteOpenHelper = new Banco.BancoOpenHelper(context);
+	}
+	
+	public void open(){
+		database = sqliteOpenHelper.getWritableDatabase();
+	}
+	
+	public void close(){
+		sqliteOpenHelper.close();
+	}
+	
+	public boolean create(Agendamento agendamento) {
+		ContentValues values = new ContentValues();
+		values.put(EntryAgendamento.AGENDAMENTO_COLUMN_TITULO, agendamento.getTitulo());
+		values.put(EntryAgendamento.AGENDAMENTO_COLUMN_DESCRICAO, agendamento.getDescricao());
+		values.put(EntryAgendamento.AGENDAMENTO_COLUMN_DATA_INICIAL, agendamento.getDataInicial());
+		values.put(EntryAgendamento.AGENDAMENTO_COLUMN_DATA_FINAL, agendamento.getDataFinal());
+		values.put(EntryAgendamento.AGENDAMENTO_COLUMN_PESO, agendamento.getPeso());
+		values.put(EntryAgendamento.AGENDAMENTO_COLUMN_ID_EVENT, agendamento.getId_evento());
+		return (database.insert(EntryAgendamento.TABLE_AGENDAMENTO, null, values)!=-1?true:false);
+		
+	}
+	
+	public void createAtCascade(List<Agendamento> agendamentos){
+		
+		for (Agendamento agendamento : agendamentos) {
+			create(agendamento);
+		}
+		
+	}
+	
+	public boolean decrementarPeso(Long id_evento){
+		
+		Log.i("Decrementar", "Decrementando...");
+		
+		String where = EntryAgendamento.AGENDAMENTO_COLUMN_ID_EVENT + " = ?";
+		String[] whereArgs = {String.valueOf(id_evento)};
+		
+		Cursor cursor = database.query(EntryAgendamento.TABLE_AGENDAMENTO, EntryAgendamento.columns, where, 
+				whereArgs, null, null, null);
+		
+		Integer pesoAtual = cursor.getInt(5);
+		if (pesoAtual == 1) pesoAtual += 1;
+		
+		if (cursor.moveToFirst()){
+			return updatePeso(cursor.getLong(0), pesoAtual-1);
+		}
+		return false;
+
+	}
+	
+	public boolean incrementarPeso(Long id_evento){
+		String where = EntryAgendamento.AGENDAMENTO_COLUMN_ID_EVENT + " = ?";
+		String[] whereArgs = {String.valueOf(id_evento)};
+		
+		Cursor cursor = database.query(EntryAgendamento.TABLE_AGENDAMENTO,
+				EntryAgendamento.columns, where, 
+				whereArgs, null, null, null);
+		
+		Integer pesoAtual = cursor.getInt(5);
+		if (pesoAtual == 3) pesoAtual -= 1;
+		
+		if (cursor.moveToFirst()){
+			return updatePeso(cursor.getLong(0), pesoAtual+1);
+		}
+		return false;
+
+	}
+
+	private boolean updatePeso(Long id, Integer peso) {
+		
+		String where = EntryAgendamento._ID + " = ?";
+		String[] whereArgs = {String.valueOf(id)};
+		
+		ContentValues values = new ContentValues();
+		values.put(EntryAgendamento.AGENDAMENTO_COLUMN_PESO, peso);
+		return (database.update(EntryAgendamento.TABLE_AGENDAMENTO, values, where, whereArgs)!=0?true:false);
+	}
+	
+	
+	private boolean updatePeso(Agendamento agendamento) {
+		
+		String where = EntryAgendamento._ID + " = ?";
+		String[] whereArgs = {String.valueOf(agendamento.getId())};
+		
+		ContentValues values = new ContentValues();
+		values.put(EntryAgendamento.AGENDAMENTO_COLUMN_PESO, agendamento.getPeso());
+		return (database.update(EntryAgendamento.TABLE_AGENDAMENTO, values, where, whereArgs)!=0?true:false);
+	}
+/*	
+	public int incrementarPeso(Integer diaDaSemana, String horaInicial, String horaFinal) {
+		
+		// normaliza o horarioInicial para XX:X0 e horarioFinal para XX:(X+1)0
+		NormalizarHorario(horaInicial, horaFinal);
+
+		Log.i("incrementarPesoBusca", "Iniciando a busca do agendamento para "
+		+ diaDaSemana + "(dia da semana): " + horaInicial + " - " + horaFinal);
+		
+		int result = AgendamentoSilenciosoDao.AGENDAMENTO_CRIADO;
+		String where = Banco.AGENDAMENTO_COLUMN_DIA_DA_SEMANA + " = ? AND "
+				+ Banco.AGENDAMENTO_COLUMN_HORA_INICIAL + " = ? AND "
+				+ Banco.AGENDAMENTO_COLUMN_HORA_FINAL + " = ?";
+		String[] whereArgs = {String.valueOf(diaDaSemana),
+				horaInicial, horaFinal};
+		Cursor cursor = database.query(Banco.TABLE_AGENDAMENTO,
+				columns, where, whereArgs, null, null, null, null);
+		cursor.moveToFirst();
+		Agendamento agendamento = new Agendamento(diaDaSemana, horaInicial, horaFinal, 0);
+		if (cursor.getCount() > 0){
+			agendamento = new Agendamento(cursor.getLong(0),diaDaSemana,
+					horaInicial, horaFinal, cursor.getInt(4)+1);
+			if (updatePeso(agendamento)){
+				result = AgendamentoSilenciosoDao.AGENDAMENTO_ATUALIZADO;
+				Log.i("PesoIncrementado", "Peso incrementado!");
+			}
+		}else{
+			create(agendamento);
+			result = AgendamentoSilenciosoDao.AGENDAMENTO_CRIADO;
+			Log.i("AgendamentoCriado", "Agendamento criado!");
+		}
+		cursor.close();
+		Log.i("PosIncremento", "Resultado: " + result);
+		return result;
+	}
+	
+	private void NormalizarHorario(String horaInicial, String horaFinal) {		
+		String temp = horaInicial.substring(0,3);
+		horaInicial = temp + "0";
+		temp = horaFinal.substring(0,2);
+		int penultimoDigito = Integer.valueOf(horaFinal.substring(2,3));
+		horaFinal = temp + (penultimoDigito+1) + "0";
+
+		ultimoHorarioAgendado = horaInicial + " - " + horaFinal;
+		
+		
+	}
+
+	public String getLastAgendamentoString() {
+		return ultimoHorarioAgendado;
+	}
+
+	public List<Agendamento> getAgendamentoByDayAprendido(int diaDaSemana) {
+		Log.i("consultaNoBanco", "Iniciando a busca do agendamento para o dia: "
+				+ diaDaSemana + "e peso 3");
+		
+		Calendar cal = new GregorianCalendar();
+
+		SimpleDateFormat format = new SimpleDateFormat("HHmm");
+		
+		String horaAtual = format.format(cal.getTime());
+
+		String where = Banco.AGENDAMENTO_COLUMN_DIA_DA_SEMANA + " = ? AND " +
+				Banco.AGENDAMENTO_COLUMN_PESO + " >= ? AND " +
+				Banco.AGENDAMENTO_COLUMN_HORA_INICIAL + " <= ?";
+		String[] whereArgs = {String.valueOf(diaDaSemana), "3", horaAtual};
+		Cursor cursor = database.query(Banco.TABLE_AGENDAMENTO,
+				columns, where, whereArgs, null, null, null, null);
+		cursor.moveToFirst();
+		List<Agendamento> listaAgendamentos = new ArrayList<Agendamento>();
+		
+		while(!cursor.isAfterLast()){
+			Agendamento agendamento = new Agendamento(cursor.getLong(0),diaDaSemana,
+					cursor.getString(2), cursor.getString(3), cursor.getInt(4));
+			listaAgendamentos.add(agendamento);
+			cursor.moveToNext();
+		}
+		cursor.close();
+		
+		return listaAgendamentos;
+	}
+
+	public List<Agendamento> getAgendamentoByDayAprendido(Integer diaDaSemana, Integer peso) {
+		Log.i("consultaNoBanco", "Iniciando a busca do agendamento para o dia: "
+				+ diaDaSemana + "e peso " + peso);
+		
+		Calendar cal = new GregorianCalendar();
+
+		SimpleDateFormat format = new SimpleDateFormat("HHmm");
+		
+		String horaAtual = format.format(cal.getTime());
+
+		String where = Banco.AGENDAMENTO_COLUMN_DIA_DA_SEMANA + " = ? AND " +
+				Banco.AGENDAMENTO_COLUMN_PESO + " = ?";
+		String[] whereArgs = {String.valueOf(diaDaSemana), String.valueOf(peso)};
+		Cursor cursor = database.query(Banco.TABLE_AGENDAMENTO,
+				columns, where, whereArgs, null, null, null, null);
+		cursor.moveToFirst();
+		List<Agendamento> listaAgendamentos = new ArrayList<Agendamento>();
+		
+		while(!cursor.isAfterLast()){
+			Agendamento agendamento = new Agendamento(cursor.getLong(0),diaDaSemana,
+					cursor.getString(2), cursor.getString(3), cursor.getInt(4));
+			listaAgendamentos.add(agendamento);
+			cursor.moveToNext();
+		}
+		cursor.close();
+		
+		return listaAgendamentos;
+	}
+*/
+
+	public Agendamento getAgendamentoByEventoId(Long id_evento) {
+		Agendamento agendamento = null;
+		
+		String where = EntryAgendamento.AGENDAMENTO_COLUMN_ID_EVENT + " = ?";
+		String[] whereArgs = {String.valueOf(id_evento)};
+		
+		Cursor cursor = database.query(EntryAgendamento.TABLE_AGENDAMENTO, 
+				EntryAgendamento.columns, where, whereArgs,
+				null,null,null);
+		
+		if (cursor.moveToFirst()){
+			agendamento = new Agendamento(cursor.getLong(0), cursor.getString(1),
+					cursor.getString(2),cursor.getLong(3), cursor.getLong(4),
+					cursor.getInt(5),cursor.getLong(6));
+		}
+		cursor.close();
+		
+		return agendamento;
+	}
+
+	
+
+
+}

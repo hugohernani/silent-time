@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="ia.hugo.silencetime"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="17" />
+
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/olho_humano"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <receiver
+            android:name="broadcasts.PerceberBoot"
+            android:enabled="true"
+            android:exported="true"
+            android:label="PerceberBoot" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <!--
+        <service
+            android:name="services.PercepcaoMudanca"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="services.PercepcaoMudanca" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="services.ControleAgendamentoService"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="services.ControleAgendamentoService" />
+            </intent-filter>
+        </service>
+        -->
+        <service
+            android:name="services.AlarmesService"
+            android:enabled="true"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="services.AlarmesService" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name="broadcasts.IniciarNotificacao"
+            android:label="Iniciar Notificacao" >
+        </receiver>
+        <receiver
+            android:name="widget.SilenceTimeWidgetProvider"
+            android:label="Silence Time widget" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/silencetime_info" />
+        </receiver>
+
+        <service android:name="services.SilenceTimeServiceWidget" />
+
+        <!--
+        <activity
+            android:name="ia.work.silencetime.SilenceTimeWidgetProvider"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="ia.work.silencetime.Configuracao"
+            android:label="@string/title_activity_configuracao" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="ia.work.silencetime.SilenceTimeActivity"
+            android:label="@string/title_activity_silence_time" >
+        </activity>
+        <activity
+            android:name="ia.work.silencetime.AgendamentosActivity"
+            android:label="@string/title_activity_agendamentos" >
+        </activity>
+        -->
+
+        <activity
+            android:name="ia.hugo.silencetime.SilenciarOpcoes"
+            android:label="@string/title_activity_silenciar_opcoes"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="ia.hugo.silencetime.ListaAgendamentosActivity"
+            android:label="@string/title_activity_lista_agendamentos"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen" >
+        </activity>
+        <activity
+            android:name="ia.hugo.silencetime.FisrtActivityTempo"
+            android:label="@string/title_activity_fisrt_activity_tempo"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen" >
+             >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="ia.hugo.silencetime.ListaSugestoesAgendamentoActivity"
+            android:label="@string/title_activity_lista_sugestoes_agendamento"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen" >
+        </activity>
+    </application>
+
+</manifest>
